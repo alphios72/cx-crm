@@ -1,0 +1,94 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String   // Hashed
+  name          String?
+  role          Role     @default(OPERATOR)
+  createdLeads  Lead[]   @relation("CreatedLeads")
+  assignedLeads Lead[]   @relation("AssignedLeads")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  OPERATOR
+}
+
+model PipelineStage {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int
+  leads     Lead[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id          String        @id @default(cuid())
+  title       String
+  contactName String?
+  value       Float?
+  status      LeadStatus    @default(TODO)
+  priority    Priority      @default(MEDIUM)
+  order       Int           @default(0)
+  probability Int?
+  color       String?
+  borderColor String?
+  
+  // Relations
+  stageId     String
+  stage       PipelineStage @relation(fields: [stageId], references: [id])
+  
+  creatorId   String
+  creator     User          @relation("CreatedLeads", fields: [creatorId], references: [id])
+  
+  assigneeId  String?
+  assignee    User?         @relation("AssignedLeads", fields: [assigneeId], references: [id])
+
+  // Next Action System
+  nextActionDate DateTime?
+  nextActionType ActionType? // EMAIL, CALL, MEETING, etc.
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  events      LeadEvent[]
+}
+
+model LeadEvent {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  description String
+  createdAt   DateTime @default(now())
+}
+
+enum LeadStatus {
+  TODO
+  WON
+  LOST
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ActionType {
+  CALL
+  EMAIL
+  MEETING
+  TASK
+}

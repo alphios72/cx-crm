@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cx_crm_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-cx_crm}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: sh -c "npx prisma generate && npm run dev"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-cx_crm}?schema=public
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-supersecret}
+      NEXTAUTH_URL: http://localhost:3000
+      # Ensure we bind to 0.0.0.0 for docker
+      HOSTNAME: "0.0.0.0"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
