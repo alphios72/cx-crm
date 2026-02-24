@@ -14,6 +14,10 @@ export type Lead = {
     borderColor?: string | null
     probability?: number | null
     assigneeId?: string | null
+    assignee?: {
+        name: string | null
+        email: string
+    } | null
     events?: LeadEvent[]
 }
 
@@ -27,5 +31,13 @@ export type LeadEvent = {
 export type Stage = {
     id: string
     name: string
-    leads: Lead[]
+    order: number
+    createdAt?: string
+    updatedAt?: string
+    leads: (Lead & {
+        assignee?: {
+            name: string | null
+            email: string
+        } | null
+    })[]
 }

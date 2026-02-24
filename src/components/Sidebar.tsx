@@ -7,15 +7,19 @@ import { LayoutDashboard, Users, Settings, LogOut, ChevronLeft, ChevronRight } f
 import { cn } from "@/lib/utils"
 import { signOut } from "next-auth/react"
 
-const navigation = [
+const baseNavigation = [
     { name: "Pipeline", href: "/dashboard", icon: LayoutDashboard },
     // { name: "Leads", href: "/dashboard/leads", icon: Users },
-    // { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
-export function Sidebar() {
+export function Sidebar({ userRole }: { userRole?: string }) {
     const pathname = usePathname()
     const [isCollapsed, setIsCollapsed] = useState(false)
+
+    const navigation = [...baseNavigation]
+    if (userRole === "ADMIN") {
+        navigation.push({ name: "Settings", href: "/dashboard/settings", icon: Settings })
+    }
 
     return (
         <div className={cn("flex flex-col h-full bg-gray-900 text-white transition-all duration-300 relative", isCollapsed ? "w-16" : "w-64")}>

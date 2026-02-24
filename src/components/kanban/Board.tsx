@@ -126,6 +126,8 @@ export function Board({ initialStages }: BoardProps) {
         setActiveLead(null)
     }
 
+    console.log("CLIENT RENDER STAGES: ", stages.map(s => s.leads));
+
     return (
         <DndContext id="kanban-board" sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <div className="flex h-full gap-4 overflow-x-auto pb-4">

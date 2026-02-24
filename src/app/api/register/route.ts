@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error("Registration error:", error)
         if (error instanceof z.ZodError) {
-            return NextResponse.json({ message: "Invalid input", errors: error.errors }, { status: 400 })
+            return NextResponse.json({ message: "Invalid input", errors: error.issues }, { status: 400 })
         }
         return NextResponse.json({ message: "Internal server error" }, { status: 500 })
     }

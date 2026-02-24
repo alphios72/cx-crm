@@ -20,6 +20,9 @@ export default async function DashboardPage() {
     const stages = await prisma.pipelineStage.findMany({
         include: {
             leads: {
+                include: {
+                    assignee: { select: { name: true, email: true } }
+                },
                 orderBy: { order: 'asc' }
             }
         },
@@ -33,12 +36,13 @@ export default async function DashboardPage() {
         ...stage,
         createdAt: stage.createdAt.toISOString(),
         updatedAt: stage.updatedAt.toISOString(),
-        leads: stage.leads.map(lead => ({
+        leads: stage.leads.map((lead: any) => ({
             ...lead,
             createdAt: lead.createdAt.toISOString(),
             updatedAt: lead.updatedAt.toISOString(),
             nextActionDate: lead.nextActionDate?.toISOString() || null,
-            value: lead.value ? Number(lead.value) : null
+            value: lead.value ? Number(lead.value) : null,
+            assignee: lead.assignee ? { name: lead.assignee.name, email: lead.assignee.email } : null
         }))
     }))
 

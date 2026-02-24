@@ -101,11 +101,18 @@ export function LeadCard({ lead }: LeadCardProps) {
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[13px] ${avatarColor}`}>
                             {firstLetter}
                         </div>
-                        <Link href={`/dashboard/leads/${lead.id}`} className="font-bold text-[#111827] text-[15px] hover:underline decoration-blue-500 underline-offset-2">
-                            {lead.title}
-                        </Link>
+                        <div className="flex flex-col">
+                            <Link href={`/dashboard/leads/${lead.id}`} className="font-bold text-[#111827] text-[15px] hover:underline decoration-blue-500 underline-offset-2 leading-tight">
+                                {lead.title}
+                            </Link>
+                            {lead.assignee && (
+                                <span className="text-[11px] text-gray-500 mt-0.5 truncate max-w-[120px]">
+                                    {lead.assignee.name || lead.assignee.email}
+                                </span>
+                            )}
+                        </div>
                     </div>
-                    <Star className={`w-4 h-4 mt-1 ${isHighPriority ? 'fill-[#fbbf24] text-[#fbbf24]' : 'fill-[#e5e7eb] text-[#e5e7eb]'}`} />
+                    <Star className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isHighPriority ? 'fill-[#fbbf24] text-[#fbbf24]' : 'fill-[#e5e7eb] text-[#e5e7eb]'}`} />
                 </div>
 
                 <div className="flex justify-between items-end mt-3 gap-2">

@@ -26,7 +26,10 @@ export default async function LeadPage({ params }: PageProps) {
         where: { id },
         include: {
             events: {
-                orderBy: { createdAt: 'desc' }
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    author: { select: { name: true, email: true } }
+                }
             }
         }
     })

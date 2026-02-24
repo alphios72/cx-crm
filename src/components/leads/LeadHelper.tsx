@@ -195,6 +195,16 @@ export function LeadHelper({ lead, stages, users = [], userRole = "OPERATOR" }: 
                                         <option value="TASK">Task</option>
                                     </select>
                                 </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <label htmlFor="nextActionNote" className="text-sm font-medium">Action Note</label>
+                                    <textarea
+                                        id="nextActionNote"
+                                        name="nextActionNote"
+                                        defaultValue={(lead as any).nextActionNote || ""}
+                                        placeholder="Add a note for the next action..."
+                                        className="flex min-h-[80px] w-full rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -216,13 +226,19 @@ export function LeadHelper({ lead, stages, users = [], userRole = "OPERATOR" }: 
                             <p className="text-gray-500 text-sm">No history events recorded yet.</p>
                         ) : (
                             <div className="space-y-3">
-                                {lead.events.map((event: LeadEvent) => (
+                                {lead.events.map((event: any) => (
                                     <div key={event.id} className="flex justify-between items-start p-4 rounded-lg bg-gray-50 border border-gray-100">
                                         <div>
                                             <p className="text-sm font-medium text-gray-900 mb-1">{event.description}</p>
-                                            <p className="text-xs text-gray-500">
-                                                {new Date(event.createdAt).toLocaleString()}
-                                            </p>
+                                            <div className="flex gap-2 text-xs text-gray-500">
+                                                <span>{new Date(event.createdAt).toLocaleString()}</span>
+                                                {event.author && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span>by {event.author.name || event.author.email}</span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <Button
                                             variant="ghost"

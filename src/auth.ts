@@ -35,6 +35,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     const { email, password } = parsedCredentials.data
                     const user = await prisma.user.findUnique({ where: { email } })
                     if (!user) return null
+
+                    if (!user.isActive) throw new Error("Account suspended")
+
                     const passwordsMatch = await bcrypt.compare(password, user.password)
 
                     if (passwordsMatch) return { id: user.id, email: user.email, name: user.name, role: user.role }

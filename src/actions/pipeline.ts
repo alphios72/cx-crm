@@ -30,7 +30,8 @@ export async function updateLeadStage(leadId: string, newStageId: string) {
                 await prisma.leadEvent.create({
                     data: {
                         leadId,
-                        description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`
+                        description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`,
+                        authorId: session.user.id,
                     }
                 })
             }
@@ -51,7 +52,10 @@ export async function updateLeadOrders(updates: { id: string; stageId: string; o
 
         const leadsToUpdate = await prisma.lead.findMany({
             where: { id: { in: updates.map((u) => u.id) } },
-            include: { stage: true }
+            include: {
+                stage: true,
+                assignee: { select: { name: true, email: true } }
+            }
         })
 
         if (session.user.role === "OPERATOR") {
@@ -80,7 +84,8 @@ export async function updateLeadOrders(updates: { id: string; stageId: string; o
                 if (newStage) {
                     eventsToCreate.push({
                         leadId: update.id,
-                        description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`
+                        description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`,
+                        authorId: session.user.id,
                     })
                 }
             }

@@ -18,6 +18,7 @@ const updateLeadSchema = z.object({
     stageId: z.string().min(1),
     nextActionDate: z.string().optional().nullable(), // ISO string from date picker
     nextActionType: z.enum(["CALL", "EMAIL", "MEETING", "TASK"]).optional().nullable(),
+    nextActionNote: z.string().optional().nullable(),
     color: z.string().optional().nullable(),
     borderColor: z.string().optional().nullable(),
 })
@@ -36,6 +37,7 @@ export async function updateLead(leadId: string, formData: FormData) {
         stageId: formData.get("stageId"),
         nextActionDate: formData.get("nextActionDate"),
         nextActionType: formData.get("nextActionType"),
+        nextActionNote: formData.get("nextActionNote"),
         color: formData.get("color"),
         borderColor: formData.get("borderColor"),
     }
@@ -78,6 +80,7 @@ export async function updateLead(leadId: string, formData: FormData) {
                 stageId: data.stageId,
                 nextActionDate: data.nextActionDate ? new Date(data.nextActionDate) : null,
                 nextActionType: data.nextActionType as any,
+                nextActionNote: data.nextActionNote || null,
                 color: data.color || null,
                 borderColor: data.borderColor || null,
             },
@@ -90,13 +93,15 @@ export async function updateLead(leadId: string, formData: FormData) {
         if (oldLead.stageId !== data.stageId && newStage) {
             eventsToCreate.push({
                 leadId,
-                description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`
+                description: `Moved from stage "${oldLead.stage?.name || 'Unknown'}" to "${newStage.name}"`,
+                authorId: session.user.id,
             })
         }
         if (oldLead.status !== data.status) {
             eventsToCreate.push({
                 leadId,
-                description: `Status changed from ${oldLead.status} to ${data.status}`
+                description: `Status changed from ${oldLead.status} to ${data.status}`,
+                authorId: session.user.id,
             })
         }
 

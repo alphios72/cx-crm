@@ -13,10 +13,12 @@ model User {
   password      String   // Hashed
   name          String?
   role          Role     @default(OPERATOR)
-  createdLeads  Lead[]   @relation("CreatedLeads")
-  assignedLeads Lead[]   @relation("AssignedLeads")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isActive      Boolean     @default(true)
+  createdLeads  Lead[]      @relation("CreatedLeads")
+  assignedLeads Lead[]      @relation("AssignedLeads")
+  events        LeadEvent[] @relation("UserEvents")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 enum Role {
@@ -57,8 +59,9 @@ model Lead {
   assignee    User?         @relation("AssignedLeads", fields: [assigneeId], references: [id])
 
   // Next Action System
-  nextActionDate DateTime?
-  nextActionType ActionType? // EMAIL, CALL, MEETING, etc.
+  nextActionDate  DateTime?
+  nextActionType  ActionType? // EMAIL, CALL, MEETING, etc.
+  nextActionNote  String?
   
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -69,6 +72,8 @@ model LeadEvent {
   id          String   @id @default(cuid())
   leadId      String
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId    String?
+  author      User?    @relation("UserEvents", fields: [authorId], references: [id], onDelete: SetNull)
   description String
   createdAt   DateTime @default(now())
 }

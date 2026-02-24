@@ -90,6 +90,20 @@ export function CreateLeadModal({ users = [], userRole = "OPERATOR" }: CreateLea
                                 </div>
                             )}
 
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <h3 className="text-sm font-semibold text-gray-900">Next Action (Optional)</h3>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="nextActionNote" className="text-sm font-medium">Action Note</label>
+                                    <textarea
+                                        id="nextActionNote"
+                                        name="nextActionNote"
+                                        placeholder="Add a note for the next action..."
+                                        className="flex min-h-[80px] w-full rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="flex justify-end pt-4">
                                 <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="mr-2">
                                     Cancel

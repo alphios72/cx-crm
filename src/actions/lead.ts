@@ -14,6 +14,7 @@ const createLeadSchema = z.object({
     probability: z.coerce.number().min(0).max(100).optional().nullable(),
     assigneeId: z.string().optional().nullable(),
     status: z.enum(["TODO", "WON", "LOST", "CANCELLED"]).default("TODO"),
+    nextActionNote: z.string().optional().nullable(),
 })
 
 export async function createLead(formData: FormData) {
@@ -29,6 +30,7 @@ export async function createLead(formData: FormData) {
         probability: formData.get("probability") ? Number(formData.get("probability")) : null,
         assigneeId: formData.get("assigneeId") || session.user.id,
         status: formData.get("status") || "TODO",
+        nextActionNote: formData.get("nextActionNote") || null,
     }
 
     const parse = createLeadSchema.safeParse(rawData)
@@ -38,7 +40,7 @@ export async function createLead(formData: FormData) {
         return { error: "Invalid data" }
     }
 
-    const { title, contactName, value, probability, assigneeId, status } = parse.data
+    const { title, contactName, value, probability, assigneeId, status, nextActionNote } = parse.data
 
     try {
         // Find the first stage to assign (usually 'Prospect' or order 1)
@@ -60,6 +62,13 @@ export async function createLead(formData: FormData) {
                 stageId: firstStage.id,
                 creatorId: session.user.id,
                 assigneeId: assigneeId || session.user.id,
+                nextActionNote,
+                events: {
+                    create: {
+                        description: `Lead created`,
+                        authorId: session.user.id,
+                    }
+                }
             },
         })
 
