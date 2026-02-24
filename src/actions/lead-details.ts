@@ -65,7 +65,7 @@ export async function updateLead(leadId: string, formData: FormData) {
 
         // Only ADMIN/MANAGER can update assignee, otherwise fallback to existing
         const newAssigneeId = session.user.role !== "OPERATOR" && data.assigneeId !== undefined
-            ? data.assigneeId
+            ? (data.assigneeId === "" ? null : data.assigneeId)
             : oldLead.assigneeId;
 
         await prisma.lead.update({

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Lead, PipelineStage, ActionType } from "@prisma/client"
 import { Calendar, Phone, Mail, Users, CheckSquare, MoreHorizontal } from "lucide-react"
 import { format } from "date-fns"
@@ -44,6 +44,12 @@ function getActionLabel(type: ActionType | null) {
 
 export function ScheduleView({ initialLeads, users, currentUserRole, currentUserId }: ScheduleViewProps) {
     const [selectedAssignee, setSelectedAssignee] = useState<string>("ALL")
+    const [isMounted, setIsMounted] = useState(false)
+
+    // Prevent hydration mismatch
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     // Filter the leads based on selection
     const filteredLeads = initialLeads.filter(lead => {
@@ -104,10 +110,10 @@ export function ScheduleView({ initialLeads, users, currentUserRole, currentUser
                                     <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-semibold text-gray-900">
-                                                {lead.nextActionDate ? format(new Date(lead.nextActionDate), "dd MMM yyyy", { locale: it }) : "-"}
+                                                {isMounted && lead.nextActionDate ? format(new Date(lead.nextActionDate), "dd MMM yyyy", { locale: it }) : "-"}
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                {lead.nextActionDate ? format(new Date(lead.nextActionDate), "HH:mm") : ""}
+                                                {isMounted && lead.nextActionDate ? format(new Date(lead.nextActionDate), "HH:mm") : ""}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
