@@ -1,0 +1,36 @@
+name: cx-crm-synology
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cx_crm_db_prod
+    restart: always # Important for NAS auto-start
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-cx_crm}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Data persistence for PostgreSQL db on the NAS
+      - /volume1/docker/cxcrm/postgres_data:/var/lib/postgresql/data
+
+  app:
+    # Set this to the GHCR image that your GitHub Actions pushes
+    # Example: ghcr.io/your_github_username/cx-crm:latest
+    image: ghcr.io/${GITHUB_REPOSITORY:-your_github_username/cx-crm}:latest
+    container_name: cx_crm_app_prod
+    restart: always # Automatic restart on crash or NAS reboot
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-cx_crm}?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-supersecret}
+      # Update with the actual static IP of the Synology NAS in production
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://<IP_DEL_NAS>:3000}
+      - PORT=3000
+    volumes:
+      # Specifically requested volume mapping
+      - /volume1/docker/cxcrm:/app/data
+    depends_on:
+      - postgres

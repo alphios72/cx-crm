@@ -20,7 +20,7 @@ jobs:
 
       - name: Start application
         run: |
-          docker-compose up -d
+          docker compose up -d
           echo "Waiting for the application to become ready..."
           timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "200" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "302" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "401" ]]; do sleep 5; done' || false
           echo "Application is up!"
