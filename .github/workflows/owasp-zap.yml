@@ -34,7 +34,7 @@ jobs:
             while true; do
               CODE=$(curl -s -o /dev/null -w "%{http_code}" localhost:3000 || echo "curl_failed")
               echo "Healthcheck returned: $CODE"
-              if [[ "$CODE" == "200" || "$CODE" == "302" || "$CODE" == "401" ]]; then
+              if [[ "$CODE" == "200" || "$CODE" == "302" || "$CODE" == "307" || "$CODE" == "401" ]]; then
                 break
               fi
               sleep 5
