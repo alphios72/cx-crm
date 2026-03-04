@@ -23,7 +23,12 @@ jobs:
           docker compose up -d
           echo "Waiting for database to start..."
           sleep 10
-          docker compose exec -T app sh -c "npx prisma db push --accept-data-loss"
+          if ! docker compose exec -T app npx tsx -e "import { PrismaClient } from '@prisma/client'; new PrismaClient().pipelineStage.count().then(()=>process.exit(0)).catch(()=>process.exit(1));"; then
+            echo "Database empty or missing tables. Pushing schema and seeding..."
+            docker compose exec -T app sh -c "npx prisma db push --accept-data-loss && npx prisma db seed"
+          else
+            echo "Database already initialized."
+          fi
           echo "Waiting for the application to become ready..."
           timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "200" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "302" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "401" ]]; do sleep 5; done' || (docker compose logs && exit 1)
           echo "Application is up!"
