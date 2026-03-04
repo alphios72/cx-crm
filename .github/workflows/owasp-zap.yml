@@ -30,7 +30,16 @@ jobs:
             echo "Database already initialized."
           fi
           echo "Waiting for the application to become ready..."
-          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "200" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "302" && "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "401" ]]; do sleep 5; done' || (docker compose logs && exit 1)
+          timeout 300 bash -c '
+            while true; do
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" localhost:3000 || echo "curl_failed")
+              echo "Healthcheck returned: $CODE"
+              if [[ "$CODE" == "200" || "$CODE" == "302" || "$CODE" == "401" ]]; then
+                break
+              fi
+              sleep 5
+            done
+          ' || (docker compose logs && exit 1)
           echo "Application is up!"
 
       - name: Get network IP
