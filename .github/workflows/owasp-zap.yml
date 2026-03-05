@@ -25,7 +25,7 @@ jobs:
           sleep 10
           if ! docker compose exec -T -u root app npx tsx -e "import { PrismaClient } from '@prisma/client'; new PrismaClient().pipelineStage.count().then(()=>process.exit(0)).catch(()=>process.exit(1));"; then
             echo "Database empty or missing tables. Pushing schema and seeding..."
-            docker compose exec -T -u root app sh -c "npx prisma db push --accept-data-loss && npx prisma db seed"
+            docker compose exec -T -u root app sh -c "npx prisma@5.22.0 db push --accept-data-loss --skip-generate && npx prisma@5.22.0 db seed"
           else
             echo "Database already initialized."
           fi
