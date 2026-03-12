@@ -17,6 +17,7 @@ type ScheduleLead = Lead & {
 
 interface ScheduleViewProps {
     initialLeads: ScheduleLead[]
+    deliveryTasks?: any[] // Support delivery tasks as well
     users: AssigneeRecord[]
     currentUserRole: string
     currentUserId: string
@@ -42,7 +43,7 @@ function getActionLabel(type: ActionType | null) {
     }
 }
 
-export function ScheduleView({ initialLeads, users, currentUserRole, currentUserId }: ScheduleViewProps) {
+export function ScheduleView({ initialLeads, deliveryTasks = [], users, currentUserRole, currentUserId }: ScheduleViewProps) {
     const [selectedAssignee, setSelectedAssignee] = useState<string>("ALL")
     const [isMounted, setIsMounted] = useState(false)
 
@@ -57,6 +58,32 @@ export function ScheduleView({ initialLeads, users, currentUserRole, currentUser
         if (selectedAssignee === "UNASSIGNED") return lead.assigneeId === null
         return lead.assigneeId === selectedAssignee
     })
+
+    // Prepare combined array of items for schedule
+    const scheduleItems = [
+        ...filteredLeads.map(l => ({
+            id: l.id,
+            type: 'LEAD',
+            date: l.nextActionDate,
+            title: l.title,
+            actionType: l.nextActionType,
+            actionNote: l.nextActionNote,
+            assignee: l.assignee,
+            stage: l.stage.name,
+            contactName: l.contactName
+        })),
+        ...deliveryTasks.map(t => ({
+            id: t.id,
+            type: 'TASK',
+            date: t.endDate,
+            title: t.title,
+            actionType: 'TASK',
+            actionNote: `Fine Attività - ${t.person.name}`,
+            assignee: t.assignee || null,
+            stage: "Delivery",
+            contactName: "-"
+        }))
+    ].filter(item => item.date !== null).sort((a, b) => new Date(a.date as Date).getTime() - new Date(b.date as Date).getTime())
 
     return (
         <div className="space-y-4">
@@ -81,7 +108,7 @@ export function ScheduleView({ initialLeads, users, currentUserRole, currentUser
                 </div>
 
                 <div className="text-sm text-gray-500">
-                    Trovate <span className="font-semibold text-gray-900">{filteredLeads.length}</span> scadenze
+                    Trovate <span className="font-semibold text-gray-900">{scheduleItems.length}</span> scadenze
                 </div>
             </div>
 
@@ -99,33 +126,33 @@ export function ScheduleView({ initialLeads, users, currentUserRole, currentUser
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredLeads.length === 0 ? (
+                            {scheduleItems.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">
                                         Nessuna scadenza trovata per i criteri selezionati.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredLeads.map((lead) => (
-                                    <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
+                                scheduleItems.map((item) => (
+                                    <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-semibold text-gray-900">
-                                                {isMounted && lead.nextActionDate ? format(new Date(lead.nextActionDate), "dd MMM yyyy", { locale: it }) : "-"}
+                                                {isMounted && item.date ? format(new Date(item.date), "dd MMM yyyy", { locale: it }) : "-"}
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                {isMounted && lead.nextActionDate ? format(new Date(lead.nextActionDate), "HH:mm") : ""}
+                                                {isMounted && item.date ? format(new Date(item.date), "HH:mm") : ""}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
-                                                    {getActionIcon(lead.nextActionType)}
+                                                    {getActionIcon(item.actionType as ActionType)}
                                                 </div>
                                                 <div className="ml-3">
-                                                    <span className="text-sm font-medium text-gray-900">{getActionLabel(lead.nextActionType)}</span>
-                                                    {lead.nextActionNote && (
-                                                        <p className="text-xs text-gray-500 mt-1 max-w-[200px] line-clamp-2" title={lead.nextActionNote}>
-                                                            {lead.nextActionNote}
+                                                    <span className="text-sm font-medium text-gray-900">{getActionLabel(item.actionType as ActionType)}</span>
+                                                    {item.actionNote && (
+                                                        <p className="text-xs text-gray-500 mt-1 max-w-[200px] line-clamp-2" title={item.actionNote}>
+                                                            {item.actionNote}
                                                         </p>
                                                     )}
                                                 </div>
@@ -133,25 +160,30 @@ export function ScheduleView({ initialLeads, users, currentUserRole, currentUser
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                                                {/* Link to Lead Details later when implemented, for now just text */}
-                                                <Link href={`/dashboard/leads/${lead.id}`}>
-                                                    {lead.title}
-                                                </Link>
+                                                {item.type === 'LEAD' ? (
+                                                    <Link href={`/dashboard/leads/${item.id}`}>
+                                                        {item.title}
+                                                    </Link>
+                                                ) : (
+                                                    <Link href={`/dashboard/delivery?taskId=${item.id}`}>
+                                                        {item.title}
+                                                    </Link>
+                                                )}
                                             </div>
-                                            <div className="text-sm text-gray-500">{lead.contactName || "Nessun Contatto"}</div>
+                                            <div className="text-sm text-gray-500">{item.contactName || "Nessun Contatto"}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                                {lead.stage.name}
+                                                {item.stage}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {lead.assignee ? (
+                                            {item.assignee ? (
                                                 <div className="flex items-center gap-2">
                                                     <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-[10px] uppercase">
-                                                        {(lead.assignee.name || lead.assignee.email).substring(0, 2)}
+                                                        {(item.assignee.name || item.assignee.email || "XX").substring(0, 2)}
                                                     </div>
-                                                    <span>{lead.assignee.name || lead.assignee.email.split('@')[0]}</span>
+                                                    <span>{item.assignee.name || item.assignee.email?.split('@')[0]}</span>
                                                 </div>
                                             ) : (
                                                 <span className="italic text-gray-400">Non assegnato</span>

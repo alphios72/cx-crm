@@ -11,6 +11,7 @@ import { useState } from "react"
 const baseNavigation = [
     { name: "Pipeline", href: "/dashboard", icon: LayoutDashboard },
     { name: "Scadenziario", href: "/dashboard/schedule", icon: Calendar },
+    { name: "Delivery", href: "/dashboard/delivery", icon: Users },
 ]
 
 export function Topbar({ userRole }: { userRole?: string }) {

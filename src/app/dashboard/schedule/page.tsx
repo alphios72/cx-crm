@@ -37,6 +37,18 @@ export default async function SchedulePage() {
         }
     })
 
+    const deliveryTasks = await prisma.deliveryTask.findMany({
+        orderBy: {
+            endDate: 'asc'
+        },
+        include: {
+            person: true,
+            assignee: {
+                select: { id: true, name: true, email: true }
+            }
+        }
+    })
+
     return (
         <div className="space-y-6">
             <div>
@@ -46,6 +58,7 @@ export default async function SchedulePage() {
 
             <ScheduleView
                 initialLeads={leads}
+                deliveryTasks={deliveryTasks}
                 users={users}
                 currentUserRole={session.user.role}
                 currentUserId={session.user.id}
