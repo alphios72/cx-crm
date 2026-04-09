@@ -20,15 +20,22 @@ export function LeadHelper({ lead, stages, users = [], userRole = "OPERATOR" }: 
     const router = useRouter()
     const [loading, setLoading] = useState(false)
 
-    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
-    const defaultDate = lead.nextActionDate
-        ? new Date(lead.nextActionDate).toISOString().slice(0, 16)
-        : ""
+    // Format date for datetime-local input using local timezone offsets
+    const defaultDate = lead.nextActionDate ? (() => {
+        const d = new Date(lead.nextActionDate);
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    })() : ""
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setLoading(true)
         const formData = new FormData(event.currentTarget)
+
+        // Adjust datetime-local string to UTC by converting it through Date object
+        const dateStr = formData.get("nextActionDate") as string
+        if (dateStr) {
+            formData.set("nextActionDate", new Date(dateStr).toISOString())
+        }
 
         // Add status if not in form (or handled by select)
         // We'll add status select to form

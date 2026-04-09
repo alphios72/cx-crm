@@ -14,7 +14,7 @@ const baseNavigation = [
     { name: "Delivery", href: "/dashboard/delivery", icon: Users },
 ]
 
-export function Topbar({ userRole }: { userRole?: string }) {
+export function Topbar({ userRole, userName, userEmail }: { userRole?: string, userName?: string | null, userEmail?: string | null }) {
     const pathname = usePathname()
     const [isProfileOpen, setIsProfileOpen] = useState(false)
 
@@ -22,6 +22,14 @@ export function Topbar({ userRole }: { userRole?: string }) {
     if (userRole === "ADMIN") {
         navigation.push({ name: "Settings", href: "/dashboard/settings", icon: Settings })
     }
+
+    const displayName = userName || (userEmail ? userEmail.split('@')[0] : "Profile");
+    const initials = displayName
+        .split(' ')
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
 
     return (
         <header className="sticky top-0 z-50 w-full flex h-14 bg-[#3b5998] text-white shadow-sm font-sans items-center px-4">
@@ -81,9 +89,9 @@ export function Topbar({ userRole }: { userRole?: string }) {
                             className="flex items-center gap-2 hover:bg-[#4264aa] p-1.5 rounded-md transition-colors"
                         >
                             <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-xs uppercase">
-                                CX
+                                {initials || "CX"}
                             </div>
-                            <span className="text-sm font-medium hidden sm:inline-block">Profile</span>
+                            <span className="text-sm font-medium hidden sm:inline-block">{displayName}</span>
                         </button>
 
                         {isProfileOpen && (
